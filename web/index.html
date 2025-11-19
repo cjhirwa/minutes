@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ProMinutes - AI-Powered Meeting Minutes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/styles.css">
+    <script src="static/script.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                <i class="fas fa-file-alt"></i>
+                <span>ProMinutes</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+        <div class="mobile-menu container" id="mobileMenu">
+            <a href="#features" onclick="closeMenu()">Features</a>
+            <a href="#how-it-works" onclick="closeMenu()">How It Works</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <h1>Never Miss a Key Discussion or Decision Again</h1>
+            <p>ProMinutes automatically transforms meeting transcripts into professional, structured minutes.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="showGenerator()">
+                    <i class="fas fa-magic"></i> Start Generating Minutes
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features for Productive Teams</h2>
+                <p>Everything you need to turn lengthy transcripts into actionable meeting minutes</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Structured Minutes</h3>
+                    <p>AI-powered formatting that organizes discussions, decisions, and action items into professional meeting minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Action Item Extraction</h3>
+                    <p>Automatically identifies and highlights action items, assignments, and deadlines from your meetings.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Enterprise-grade security with end-to-end encryption. Your meeting data stays confidential.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Three simple steps to transform your transcripts into professional minutes</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3>Upload Recording</h3>
+                    <p>Simply upload your meeting recording.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>AI Summarizes</h3>
+                    <p>Our advanced AI analyzes the content, identifies key points, and structures the information.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3>Get Minutes</h3>
+                    <p>Receive professional meeting minutes with action items, decisions, and summaries in seconds.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Generator Section -->
+    <section class="generator" id="generator">
+        <div class="container">
+            <div class="generator-card">
+                <h2 style="margin-bottom: 1.5rem; color: #043673;">
+                    Generate Minutes
+                </h2>
+                
+                <div class="alert alert-error" id="errorAlert">
+                    <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+                </div>
+
+                <form id="transcriptForm" onsubmit="generateMinutes(event)">
+                    <div class="form-group">
+                        <label for="transcript">
+                            <i class="fas fa-music"></i> Meeting Recording
+                        </label>
+                        <input type="file" name="file" id="recordFile" accept=".mp3, .wav, .m4a, .flac, .ogg, .webm" required>
+                    </div>
+                    <button type="submit" class="btn btn-generate" id="generateBtn">
+                        <i class="fas fa-magic"></i> Generate Minutes
+                    </button>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p id="progress-updates"></p>
+            </div>
+
+            <div class="results generator-card" id="results">
+                <div class="results-header">
+                    <h2><i class="fas fa-file-alt"></i> Minute</h2>
+                    <div>
+                        <button class="btn-copy" onclick="copyMinutes()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="alert alert-success" id="successAlert">
+                    <i class="fas fa-check-circle"></i> Minutes copied to clipboard!
+                </div>
+                <div class="minutes-content" id="minutesContent"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 ProMinutes. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
