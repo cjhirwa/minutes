@@ -1,4 +1,4 @@
-const apiUrl = 'http://127.0.0.1:8000/api';
+const apiUrl = 'http://127.0.0.1:8001/api';
 
 function toggleMenu() {
     const mobileMenu = document.getElementById('mobileMenu');
@@ -36,6 +36,11 @@ async function generateMinutesFromTranscript(transcript) {
 
         if (data.minutes) {
             showProgressUpdate('Done summarizing...');
+
+            if (data.minutes.error) {
+                showError(data.minutes.error);
+                return;
+            }
             displayMinutes(data.minutes);
             localStorage.removeItem('lastTranscript');
         } else {

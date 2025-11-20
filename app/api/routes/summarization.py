@@ -14,4 +14,9 @@ class TranscriptRequest(BaseModel):
 def summarize(request: TranscriptRequest):
     generator = MeetingMinutesGenerator()
     minute = generator.generate_minutes(request.transcript)
+    
+    # add error handling
+    if "error" in minute:
+        return {"minutes": {"error": minute["error"]}}
+    
     return {"minutes": minute}
