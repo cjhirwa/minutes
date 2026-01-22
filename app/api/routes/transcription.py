@@ -10,7 +10,7 @@ router = APIRouter()
 
 # Configure allowed audio formats
 ALLOWED_EXTENSIONS: Set[str] = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".webm"}
-MAX_FILE_SIZE: int = 25 * 1024 * 1024  # 25MB
+MAX_FILE_SIZE: int = 100 * 1024 * 1024  # 100MB
 
 
 @router.post("/")

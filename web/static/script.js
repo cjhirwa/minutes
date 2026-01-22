@@ -1,4 +1,4 @@
-const apiUrl = 'http://127.0.0.1:8001/api';
+const apiUrl = 'http://172.29.98.127:8080/api';
 
 function toggleMenu() {
     const mobileMenu = document.getElementById('mobileMenu');
@@ -13,9 +13,41 @@ function closeMenu() {
     document.getElementById('mobileMenu').style.display = 'none';
 }
 
+function validateAudio() {
+    const fileInput = document.getElementById('recordFile');
+    const file = fileInput.files[0];
+    const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/x-m4a', 'audio/flac', 'audio/ogg', 'audio/webm'];
+
+    if (file && !allowedTypes.includes(file.type)) {
+        showError('Invalid file type. Please upload an audio file (mp3, wav, m4a, flac, ogg, webm).');
+        fileInput.value = ''; // Clear the invalid file
+    } else {
+        // check size limit (e.g., 100MB)
+        const maxSize = 100 * 1024 * 1024; // 100MB
+        if (file && file.size > maxSize) {
+            showError('File size exceeds the 100MB limit. Please upload a smaller file. Your file size: ' + (file.size / (1024 * 1024)).toFixed(2) + ' MB');
+            fileInput.value = ''; // Clear the invalid file
+        } else {
+            hideAlerts();
+        }
+    }
+}
+
 function showGenerator() {
     document.getElementById('generator').classList.add('active');
     document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function fetchWithTimeout(url, options = {}, timeout = 3600000) { // 1 hour default
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        return response;
+    } finally {
+        clearTimeout(id);
+    }
 }
 
 async function generateMinutesFromTranscript(transcript) {
@@ -36,18 +68,12 @@ async function generateMinutesFromTranscript(transcript) {
 
         if (data.minutes) {
             showProgressUpdate('Done summarizing...');
-
-            if (data.minutes.error) {
-                showError(data.minutes.error);
-                return;
-            }
             displayMinutes(data.minutes);
             localStorage.removeItem('lastTranscript');
         } else {
             showError('Invalid response from server.');
         }
     } catch (error) {
-        console.error(error);
         showError('Failed to generate minutes. Please try again.');
         
     } finally {
@@ -59,17 +85,14 @@ async function generateMinutesFromTranscript(transcript) {
 async function generateMinutes(event) {
     event.preventDefault();
 
-    // Hide previous results and alerts
     hideAlerts();
     document.getElementById('results').classList.remove('active');
-    
-    // Show loading
     document.getElementById('loading').classList.add('active');
     document.getElementById('generateBtn').disabled = true;
 
     showProgressUpdate('Transcribing audio...');
 
-    // directly call summary frunction if there is a saved transcript
+    // If there’s a saved transcript, skip transcription
     const savedTranscript = localStorage.getItem('lastTranscript');
     if (savedTranscript) {
         generateMinutesFromTranscript(savedTranscript);
@@ -86,31 +109,34 @@ async function generateMinutes(event) {
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
-        const response = await fetch(`${apiUrl}/transcribe/`, {
+        // Use fetchWithTimeout for long transcription requests
+        const response = await fetchWithTimeout(`${apiUrl}/transcribe/`, {
             method: 'POST',
             body: formData
-        });
-
+        }, 3600000); // 1 hour timeout for long audio files
 
         const data = await response.json();
-        
+
         if (data.transcript) {
-            // save transcript to local storage
             localStorage.setItem('lastTranscript', data.transcript);
             showProgressUpdate('Done Transcribing audio, generating summary...');
             generateMinutesFromTranscript(data.transcript);
         } else {
             showError('Invalid response from server.');
         }
+
     } catch (error) {
-        console.error(error);
-        showError('Failed to generate minutes. Please try again.');
+        if (error.name === 'AbortError') {
+            showError('Transcription timed out. Please try a smaller file or wait longer.');
+        } else {
+            showError('Failed to generate minutes. Please try again.');
+        }
     } finally {
         document.getElementById('loading').classList.remove('active');
         document.getElementById('generateBtn').disabled = false;
     }
-
 }
+
 
 function displayMinutes(data) {
     const minutesContent = document.getElementById('minutesContent');

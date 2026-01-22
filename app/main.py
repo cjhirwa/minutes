@@ -1,24 +1,36 @@
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import summarization, transcription
+from app.services.whisper_service import _load_model
 
-app = FastAPI(title="Meeting Minutes AI")
 
-origins = [
-    "http://localhost:3000",  # your frontend URL
-    "http://127.0.0.1:5500",  # e.g., live server
-    "*",                      # allow all origins (use only for dev)
-]
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Preload the Whisper model
+    print("Preloading Whisper model...")
+    try:
+        _load_model("small")
+        print("Whisper model loaded successfully!")
+    except Exception as e:
+        print(f"Warning: Failed to preload Whisper model: {e}")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    yield
 
+    # Shutdown: cleanup if needed
+    pass
+
+
+app = FastAPI(lifespan=lifespan, title="Meeting Minutes AI")
+
+# Mount static folder
+static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "web")
+app.mount("/web", StaticFiles(directory=static_path, html=True), name="static")
+
+# API routers
 app.include_router(
     transcription.router, prefix="/api/transcribe", tags=["transcription"]
 )
@@ -27,13 +39,16 @@ app.include_router(
 )
 
 
-# add status endpoint
+# Status endpoint
 @app.get("/api/status")
 async def get_status():
     return {"status": "ready"}
 
 
-# add root endpoint
-@app.get("/api/")
+# Root redirect to frontend
+from fastapi.responses import RedirectResponse
+
+
+@app.get("/")
 async def root():
-    return {"message": "Welcome to the Meeting Minutes AI API"}
+    return RedirectResponse(url="/web/index.html")
